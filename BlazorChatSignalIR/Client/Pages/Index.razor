@@ -1,5 +1,34 @@
 ﻿@page "/"
 @inject NavigationManager NavigationManager
+@implements IAsyncDisposable
+
+<PageTitle>Signal IR Chat</PageTitle>
+<h3>SignalR Chat</h3>
+
+if(!IsConneted)
+{
+    <div class="input-group">
+        <input @bind="username" class="form-control" placeholder="What's your name?">
+        <button class"btn btn-primary form-control-append" @onclick="Connect">
+            Connect
+        </button>
+    </div>
+}
+else
+{
+    <textarea style="width: 100%; height: 500px;">
+        @messages
+    </textarea>
+    <div class="input-group">
+        <input @bind-value="message"
+            @bind-value:event="oninput"
+            @onkeyup="HandleInput"
+            class="form-control">
+        <button class="btn btn-primary form-group-append"
+             @onclick="Send"
+             disable="@(!IsConnected)"></button>
+    </div>
+}
 
 @code {
     private HubConnection? hubConnection;
@@ -30,6 +59,14 @@
         {
             await hubConnection.SendAsync("AddMessageToChat", username, message);
             message = string.Empty;
+        }
+    }
+
+    private async Task HandleInput(KeyboardEventArgs args)
+    {
+        if(args.Key ==null || args.Key.Equals("Enter"))
+        {
+            await Send();
         }
     }
 
